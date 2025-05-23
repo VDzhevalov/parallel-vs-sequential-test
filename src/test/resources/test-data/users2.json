@@ -1,0 +1,4 @@
+[  {"fullName": "fullName1", "email": "email1", "currentAddress": "currentAddress1", "permanentAddress": "permanentAddress1"},
+   {"fullName": "fullName2", "email": "email2", "currentAddress": "currentAddress2", "permanentAddress": "permanentAddress2"},
+   {"fullName": "fullName3", "email": "email3", "currentAddress": "currentAddress3", "permanentAddress": "permanentAddress3"}
+]

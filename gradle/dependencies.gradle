@@ -1,0 +1,15 @@
+ext {
+    versions = [
+            selenide: '7.9.2',
+            junit: '5.10.2',
+            allure: '2.29.1'
+    ]
+}
+
+dependencies {
+    testImplementation "com.codeborne:selenide:${versions.selenide}"
+    testImplementation platform("io.qameta.allure:allure-bom:${versions.allure}")
+    testImplementation "io.qameta.allure:allure-junit5"
+    testImplementation "io.qameta.allure:allure-selenide"
+    testImplementation "org.junit.jupiter:junit-jupiter:${versions.junit}"
+}

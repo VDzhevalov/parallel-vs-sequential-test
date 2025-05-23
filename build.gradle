@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'io.qameta.allure' version '2.11.2'
+}
+
+apply from: 'gradle/repositories.gradle'
+apply from: 'gradle/dependencies.gradle'
+apply from: 'gradle/allure-tasks.gradle'
+apply from: 'gradle/tasks.gradle'
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+

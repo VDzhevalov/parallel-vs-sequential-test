@@ -1,0 +1,5 @@
+[
+  { "searchQuery": "Metro Exodus", "expectedTitle": "Metro Exodus" },
+  { "searchQuery": "Disco Elysium", "expectedTitle": "Disco Elysium - The Final Cut" },
+  { "searchQuery": "Fallout 2", "expectedTitle": "Fallout 2" }
+]

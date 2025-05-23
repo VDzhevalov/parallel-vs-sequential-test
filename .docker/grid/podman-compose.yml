@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  selenium-hub:
+    image: docker.io/selenium/hub:4.21.0
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+    profiles: ["tests"]
+
+  chrome1:
+    image: docker.io/selenium/node-chrome:4.21.0
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    ports:
+      - "7901:7900"
+    profiles: ["tests"]
+
+  chrome2:
+    image: docker.io/selenium/node-chrome:4.21.0
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    ports:
+      - "7902:7900"
+    profiles: ["tests"]
+
+  selenide-tests:
+    env_file:
+      - .env
+    build:
+      context: ../..
+      dockerfile: .docker/tests/Dockerfile
+    container_name: ${TEST_CONTAINER} #Нажаль podman-compose це ігнорує та генерує назви автоматично <compose-project>_<service-name>: grid_selenide-tests
+    volumes:
+      - allure-results-volume:${TEST_REPORT_TARGET_PATH}
+      - ${HOST_TEST_PROJECT_PATH}:/app
+    environment:
+      - SELENIUM_REMOTE_URL=${SELENIUM_HUB_URL}
+    command: ["sh", "-c", "tail -f /dev/null"]
+    profiles: ["tests"]
+
+  allure-server:
+    env_file:
+      - .env
+    build:
+      context: ../..
+      dockerfile: .docker/web/Dockerfile
+    container_name: ${WEB_CONTAINER} #Нажаль podman-compose це ігнорує та генерує назви автоматично <compose-project>_<service-name>: grid_allure-server
+    volumes:
+      - allure-results-volume:${WEB_REPORT_TARGET_PATH}:ro
+    ports:
+      - "${REPORT_PORT}:8080"
+    profiles: ["report"]
+
+volumes:
+  allure-results-volume:

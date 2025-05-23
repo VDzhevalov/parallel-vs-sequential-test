@@ -1,0 +1,80 @@
+
+def mergedResultsDir = "$buildDir/allure-results-merged"
+def reportDir = "$buildDir/reports/allure-report"
+
+
+tasks.register('generateAllureReport', Exec) {
+    description = 'Генерує Allure репорт з об’єднаних результатів'
+    group = "allure"
+    dependsOn 'mergeAllureResults'
+    commandLine 'allure', 'generate', mergedResultsDir, '-o', reportDir, '--clean'
+}
+
+tasks.named('generateAllureReport') {
+    finalizedBy 'copyAllureReports'
+}
+
+tasks.register("mergeAllureResults") {
+    group = "allure"
+    description = "Merge allure-results from multiple parallel runs into one directory"
+
+    doLast {
+        def inputDir = file("build/allure-results")
+        def mergedDir = file("build/allure-results-merged")
+
+        if (!inputDir.exists()) {
+            println "Directory ${inputDir} does not exist."
+            return
+        }
+        mergedDir.mkdirs()
+
+        inputDir.eachFileRecurse { file ->
+            if (file.isFile()) {
+                if (file.name.endsWith(".json") || file.name.endsWith(".txt") || file.name.endsWith(".xml")) {
+                    def uuid = UUID.randomUUID().toString()
+                    def targetFile = new File(mergedDir, "${uuid}-${file.name}")
+                    targetFile.withOutputStream { out ->
+                        file.withInputStream { input ->
+                            input.transferTo(out)
+                        }
+                    }
+                } else {
+                    def targetFile = new File(mergedDir, file.name)
+                    targetFile.withOutputStream { out ->
+                        file.withInputStream { input ->
+                            input.transferTo(out)
+                        }
+                    }
+                }
+            }
+        }
+        println "Merged results into ${mergedDir}"
+    }
+}
+
+def sourceDir = file("$buildDir/reports")
+
+tasks.register('copyAllureReports', Copy) {
+    group = 'allure'
+    description = 'Copy all Allure reports with names allure-report*'
+
+    def dirPrefix = project.hasProperty('dirName') ? project.property('dirName') : 'default'
+    def timestamp = new Date().format("dd-MM-yy_HH-mm")
+    def dynamicReportDir = file("${rootDir}/allure-report/${dirPrefix}_allure-report-$timestamp")
+
+    from(sourceDir)
+    into("${dynamicReportDir}")
+
+    doFirst {
+        println "Copy from dirs:"
+        sourceDir.listFiles().findAll { it.name.startsWith("allure") }.each {
+            println " - ${it}"
+        }
+        println "Copy to dirs: ${dynamicReportDir}"
+    }
+
+    doLast {
+        delete file(mergedResultsDir)
+        delete file(sourceDir)
+    }
+}

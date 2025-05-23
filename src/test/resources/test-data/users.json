@@ -1,0 +1,20 @@
+{
+  "User1": {
+    "Full Name": "значення1",
+    "Email": "значення2",
+    "Current Address": "значення5",
+    "Permanent Address": "значення5"
+  },
+  "User2": {
+    "Full Name": "значення3",
+    "Email": "значення4",
+    "Current Address": "значення5",
+    "Permanent Address": "значення5"
+  },
+  "User": {
+    "Full Name": "значення6",
+    "Email": "значення4",
+    "Current Address": "значення5",
+    "Permanent Address": "значення5"
+  }
+}

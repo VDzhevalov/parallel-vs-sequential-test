@@ -1,0 +1,107 @@
+
+
+def resultsBaseDir = "$buildDir/allure-results"
+def mergedResultsDir = "$buildDir/allure-results-merged"
+
+def registerCustomTestTask = { String taskName, String reportPrefix, Closure config ->
+    tasks.register(taskName, Test) {
+        useJUnitPlatform{
+
+        }
+        project.ext.dirName = reportPrefix
+        // Завжди вважаємо, що таска не up-to-date (щоб не кешувалась)
+        outputs.upToDateWhen { false }
+        doFirst {
+            delete file(resultsBaseDir)
+            delete file(mergedResultsDir)
+        }
+        doFirst {
+            def forkIndex = "${taskName}_${System.currentTimeMillis()}"
+            def resultDir = file("${resultsBaseDir}/fork-${forkIndex}")
+            println ">> Зберігаємо Allure результати в: $resultDir"
+            systemProperty 'allure.results.directory', resultDir
+        }
+        finalizedBy 'copyAllureReports'
+        // Передається додаткова конфігурація (наприклад теги)
+        config.delegate = delegate
+        config.resolveStrategy = Closure.DELEGATE_FIRST
+        config()
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+registerCustomTestTask('oneByOnePMITests', 'oneByOnePMI') {
+    useJUnitPlatform {
+        includeTags 'oneByOne_PER_METHOD_Inline'
+    }
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('oneByOnePMFTests', 'oneByOnePMF') {
+    useJUnitPlatform {
+        includeTags 'oneByOne_PER_METHOD_FromFile'
+    }
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('oneByOnePCITests', 'oneByOnePCI') {
+    useJUnitPlatform {
+        includeTags 'oneByOne_PER_CLASS_Inline'
+    }
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('oneByOnePCFTests', 'oneByOnePCF') {
+    useJUnitPlatform {
+        includeTags 'oneByOne_PER_CLASS_FromFile'
+    }
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('parallelForkPCITests', 'parallelForkPCI') {
+    useJUnitPlatform {
+        includeTags 'parallelFork_PER_CLASS_Inline'
+    }
+    maxParallelForks = 2
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('parallelForkPCFTests', 'parallelForkPCF') {
+    useJUnitPlatform {
+        includeTags 'parallelFork_PER_CLASS_FromFile'
+    }
+    maxParallelForks = 2
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('parallelForkPMITests', 'parallelForkPMI') {
+    useJUnitPlatform {
+        includeTags 'parallelFork_PER_METHOD_Inline'
+    }
+    maxParallelForks = 2
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('parallelForkPMFTests', 'parallelForkPMF') {
+    useJUnitPlatform {
+        includeTags 'parallelFork_PER_METHOD_FromFile'
+    }
+    maxParallelForks = 2
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('parallelConcurrentIlTests', 'parallelConcurrentIl') {
+    useJUnitPlatform {
+        includeTags 'CONCURRENT_Inline'
+    }
+    finalizedBy 'generateAllureReport'
+}
+
+registerCustomTestTask('parallelConcurrentFFTests', 'parallelConcurrentFF') {
+    useJUnitPlatform { includeTags 'CONCURRENT_FromFile' }
+    finalizedBy 'generateAllureReport'
+}
+
